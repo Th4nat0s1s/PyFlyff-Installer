@@ -2,13 +2,14 @@ import json
 import pathlib
 import sys
 import time
+import os
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from PyQt5.QtGui import QKeySequence, QIcon
 
-from tkinter import Tk, Frame, Label, Entry, Button, X, W, LEFT, RIGHT, END
+from tkinter import Tk, ttk, Frame, Label, Entry, Button, X, W, LEFT, RIGHT, END
 from tkinter import messagebox
 
 import random
@@ -30,9 +31,10 @@ mini_ftool_in_game_key = ""
 alt_control_key_list_1 = []
 alt_control_key_list_2 = []
 
-window_name = ""
+mini_ftool_window_name = ""
 hwndMain = ""
 hwndAlt = ""
+alt_window_name = ""
 user_agent = ""
 
 mini_ftool_repeat_times = 0
@@ -41,6 +43,8 @@ mini_ftool_interval = 0
 start_mini_ftool_loop = False
 alt_control_boolean = False
 menubar_window = False
+
+profile_file_location = "C:/PyFlyff/profiles.txt"
 
 mini_ftool_json_file = "MiniFToolConfig.json"
 mini_ftool_json_file_location = pathlib.Path(mini_ftool_json_file)
@@ -246,7 +250,7 @@ class MainWindow(QMainWindow):
         q_action_fullscreen.triggered.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         q_action_open_alt_client = QAction("Open Alt Client | Ctrl+Shift+PageUp", self)
-        q_action_open_alt_client.triggered.connect(lambda: self.create_new_window(url, "PyFlyff - Alt"))
+        q_action_open_alt_client.triggered.connect(self.create_profile)
 
         q_action_reload_main_client = QAction("Reload Main Client | Ctrl+Shift+F5", self)
         q_action_reload_main_client.triggered.connect(lambda: self.browser.setUrl(QUrl(url)))
@@ -297,7 +301,7 @@ class MainWindow(QMainWindow):
         self.change_fullscreen.activated.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         self.new_client = QShortcut(QKeySequence("Ctrl+Shift+PgUp"), self)
-        self.new_client.activated.connect(lambda: self.create_new_window(url, "PyFlyff - Alt"))
+        self.new_client.activated.connect(self.create_profile)
 
         self.create_shortcuts()
 
@@ -308,14 +312,14 @@ class MainWindow(QMainWindow):
     def create_new_window(self, link, wn):
         self.new_window = QWebEngineView()
 
-        alt_profile = QWebEngineProfile("AltProfile", self.new_window)
-        alt_profile.setCachePath("C:/PyFlyff/PyFlyffAlt")
-        alt_profile.setPersistentStoragePath("C:/PyFlyff/PyFlyffAlt")
+        alt_profile = QWebEngineProfile(wn.replace(" ", ""), self.new_window)
+        alt_profile.setCachePath("C:/PyFlyff/" + wn.replace(" ", ""))
+        alt_profile.setPersistentStoragePath("C:/PyFlyff/" + wn.replace(" ", ""))
         alt_page = QWebEnginePage(alt_profile, self.new_window)
 
         self.new_window.setPage(alt_page)
         self.new_window.load(QUrl(link))
-        self.new_window.setWindowTitle(wn)
+        self.new_window.setWindowTitle("PyFlyff - " + wn)
         self.new_window.setWindowIcon(QIcon(icon))
         self.new_window.showMaximized()
 
@@ -330,6 +334,86 @@ class MainWindow(QMainWindow):
         else:
             w.showFullScreen(self)
             bar.setVisible(False)
+
+    def create_profile(self):
+        global profile_file_location
+        global menubar_window
+
+        if not menubar_window:
+
+            menubar_window = True
+
+            alt_profile_window = Tk()
+
+            window_width = 300
+            window_height = 100
+
+            screen_width = alt_profile_window.winfo_screenwidth()
+            screen_height = alt_profile_window.winfo_screenheight()
+
+            x = (screen_width / 2) - (window_width / 2)
+            y = (screen_height / 2) - (window_height / 2)
+
+            alt_profile_window.geometry("300x100+" + str(int(x)) + "+" + str(int(y)))
+            alt_profile_window.minsize(300, 100)
+            alt_profile_window.attributes("-topmost", True)
+            alt_profile_window.title("Alt Profile")
+            alt_profile_window.iconbitmap(icon)
+
+            def open_profile_new_window():
+                global menubar_window
+                global profile_file_location
+                global url
+
+                try:
+                    if alt_profile_combobox.get() == "":
+
+                        messagebox.showerror("Error", "Field cannot be empty.")
+
+                    else:
+
+                        exist = any(alt_profile_combobox.get() in string for string in profile_list)
+
+                        if not exist:
+                            profile_list.append(alt_profile_combobox.get())
+                            alt_profile_combobox["values"] = profile_list
+
+                            f = open(profile_file_location, "a")
+                            f.write(alt_profile_combobox.get() + "\n")
+                            f.close()
+
+                        self.create_new_window(url, alt_profile_combobox.get())
+
+                        menubar_window = False
+                        alt_profile_window.destroy()
+
+                except Exception as e:
+                    messagebox.showerror("Error", str(e))
+
+            profile_list = []
+
+            if os.path.isfile(profile_file_location):
+                f = open(profile_file_location, "r")
+                content = f.read()
+                profile_list = content.split("\n")
+                profile_list.remove("")
+                f.close()
+            else:
+                f = open(profile_file_location, "w")
+                f.close()
+
+            alt_window_label = Label(alt_profile_window, text="Create a new profile or choose an existing one.")
+            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=profile_list)
+
+            alt_window_label.pack(fill=X, pady=5, padx=5)
+            alt_profile_combobox.pack(fill=X, pady=5, padx=5)
+
+            button_save = Button(text="Open", width=10, height=1, command=open_profile_new_window)
+            button_save.pack(pady=5)
+
+            alt_profile_window.wm_protocol("WM_DELETE_WINDOW",
+                                           lambda: self.destroy_toolbar_windows(alt_profile_window))
+            alt_profile_window.mainloop()
 
     @staticmethod
     def ftool_loop():
@@ -361,9 +445,9 @@ class MainWindow(QMainWindow):
     def start_ftool(self):
         global start_mini_ftool_loop
         global hwndMain
-        global window_name
+        global mini_ftool_window_name
 
-        hwndMain = win32gui.FindWindow(None, "PyFlyff - " + window_name)
+        hwndMain = win32gui.FindWindow(None, "PyFlyff - " + mini_ftool_window_name)
 
         if not start_mini_ftool_loop:
             if mini_ftool_activation_key != "" and mini_ftool_in_game_key != "":
@@ -407,7 +491,7 @@ class MainWindow(QMainWindow):
                 global alt_control_key_list_1
                 global mini_ftool_repeat_times
                 global mini_ftool_interval
-                global window_name
+                global mini_ftool_window_name
                 global vk_code
                 global menubar_window
                 global mini_ftool_json_file
@@ -445,7 +529,7 @@ class MainWindow(QMainWindow):
                         mini_ftool_in_game_key = vk_code.get(in_game_hotkey_entry.get())
                         mini_ftool_repeat_times = int(repeat_times_entry.get())
                         mini_ftool_interval = float(interval_entry.get())
-                        window_name = window_entry.get()
+                        mini_ftool_window_name = window_entry.get().replace("PyFlyff - ", "")
 
                         self.ftool_key.setKey(mini_ftool_activation_key)
 
@@ -527,7 +611,7 @@ class MainWindow(QMainWindow):
             alt_control_config_window = Tk()
 
             window_width = 300
-            window_height = 250
+            window_height = 280
 
             screen_width = alt_control_config_window.winfo_screenwidth()
             screen_height = alt_control_config_window.winfo_screenheight()
@@ -535,8 +619,8 @@ class MainWindow(QMainWindow):
             x = (screen_width / 2) - (window_width / 2)
             y = (screen_height / 2) - (window_height / 2)
 
-            alt_control_config_window.geometry("300x250+" + str(int(x)) + "+" + str(int(y)))
-            alt_control_config_window.minsize(300, 250)
+            alt_control_config_window.geometry("300x280+" + str(int(x)) + "+" + str(int(y)))
+            alt_control_config_window.minsize(300, 280)
             alt_control_config_window.attributes("-topmost", True)
             alt_control_config_window.title("Alt Control")
             alt_control_config_window.iconbitmap(icon)
@@ -546,6 +630,7 @@ class MainWindow(QMainWindow):
                 global vk_code
                 global alt_control_boolean
                 global menubar_window
+                global alt_window_name
                 global alt_control_json_file
                 global alt_control_key_list_1
                 global alt_control_key_list_2
@@ -566,7 +651,9 @@ class MainWindow(QMainWindow):
                 alt_control_key_list_2 = alt_client_hotkey_entry.get().split(",")
 
                 try:
-                    if (main_client_hotkey_entry.get() and alt_client_hotkey_entry.get()) == "":
+                    if (main_client_hotkey_entry.get()
+                        and alt_client_hotkey_entry.get()
+                        and alt_window_entry.get()) == "":
 
                         messagebox.showerror("Error", "Fields cannot be empty.")
 
@@ -599,8 +686,11 @@ class MainWindow(QMainWindow):
                             globals()["acig" + str(key2_counter)] = vk_code.get(key2)
                             key2_counter += 1
 
+                        alt_window_name = alt_window_entry.get().replace("PyFlyff - ", "")
+
                         self.save_config_json(file=alt_control_json_file,
-                                              values=(main_client_hotkey_entry.get(), alt_client_hotkey_entry.get()))
+                                              values=(main_client_hotkey_entry.get(), alt_client_hotkey_entry.get(),
+                                                      alt_window_entry.get()))
 
                         alt_control_boolean = True
                         menubar_window = False
@@ -637,11 +727,17 @@ class MainWindow(QMainWindow):
             alt_client_hotkey_label = Label(frame, text="Alt Client Hotkey(s):", width=20, anchor=W)
             alt_client_hotkey_entry = Entry(frame, width=22)
 
+            alt_window_label = Label(frame, text="Alt Window:", width=20, anchor=W)
+            alt_window_entry = Entry(frame, width=22)
+
             main_client_hotkey_label.grid(row=0, column=0, pady=5)
             main_client_hotkey_entry.grid(row=0, column=1, pady=5)
 
             alt_client_hotkey_label.grid(row=1, column=0, pady=5)
             alt_client_hotkey_entry.grid(row=1, column=1, pady=5)
+
+            alt_window_label.grid(row=2, column=0, pady=5)
+            alt_window_entry.grid(row=2, column=1, pady=5)
 
             button_start = Button(text="Start", width=10, height=1, command=start)
             button_start.pack(side=LEFT, padx=25)
@@ -655,6 +751,7 @@ class MainWindow(QMainWindow):
 
                     main_client_hotkey_entry.insert(0, data["activation_key"])
                     alt_client_hotkey_entry.insert(0, data["in_game_key"])
+                    alt_window_entry.insert(0, data["alt_window"])
 
             alt_control_config_window.wm_protocol("WM_DELETE_WINDOW",
                                                   lambda: self.destroy_toolbar_windows(alt_control_config_window))
@@ -663,10 +760,11 @@ class MainWindow(QMainWindow):
     @staticmethod
     def send_alt_control_command(igk):
         global alt_control_boolean
+        global alt_window_name
         global hwndAlt
 
         if alt_control_boolean and igk != "":
-            hwndAlt = win32gui.FindWindow(None, "PyFlyff - Alt")
+            hwndAlt = win32gui.FindWindow(None, "PyFlyff - " + alt_window_name)
 
             win32api.SendMessage(hwndAlt, win32con.WM_KEYDOWN, igk, 0)
             time.sleep(0.5)
@@ -716,14 +814,13 @@ class MainWindow(QMainWindow):
                 except Exception as e:
                     messagebox.showerror("Error", str(e))
 
-            user_agent_label = Label(user_agent_config_window, text="Set your User Agent below:", width=30)
-            user_agent_entry = Entry(user_agent_config_window, width=40)
-            restart_label = Label(user_agent_config_window, text="After setting your User Agent, restart the Client.",
-                                  width=50)
+            user_agent_label = Label(user_agent_config_window, text="Set your User Agent below:")
+            user_agent_entry = Entry(user_agent_config_window)
+            restart_label = Label(user_agent_config_window, text="After setting your User Agent, restart the Client.")
 
-            user_agent_label.pack(pady=5)
-            user_agent_entry.pack(pady=5)
-            restart_label.pack(pady=5)
+            user_agent_label.pack(fill=X, pady=5, padx=5)
+            user_agent_entry.pack(fill=X, pady=5, padx=5)
+            restart_label.pack(fill=X, pady=5, padx=5)
 
             button_save = Button(text="Save", width=10, height=1, command=save)
             button_save.pack(pady=5)
@@ -758,7 +855,7 @@ class MainWindow(QMainWindow):
                         "interval": values[3], "window": values[4]}
 
             if file == alt_control_json_file:
-                data = {"activation_key": values[0], "in_game_key": values[1]}
+                data = {"activation_key": values[0], "in_game_key": values[1], "alt_window": values[2]}
 
             if file == user_agent_json_file:
                 data = {"user_agent": values[0]}
@@ -779,7 +876,7 @@ class MainWindow(QMainWindow):
         w.destroy()
 
     def reset_hotkeys(self):
-        global window_name
+        global mini_ftool_window_name
         global hwndMain
         global hwndAlt
         global mini_ftool_activation_key
@@ -787,7 +884,7 @@ class MainWindow(QMainWindow):
         global start_mini_ftool_loop
 
         if not start_mini_ftool_loop:
-            window_name = ""
+            mini_ftool_window_name = ""
             hwndMain = ""
             hwndAlt = ""
 
@@ -819,6 +916,9 @@ class MainWindow(QMainWindow):
     def clear_alt_control_shortcut_keys(self):
         global alt_control_key_list_1
         global alt_control_key_list_2
+        global alt_window_name
+
+        alt_window_name = ""
 
         alt_control_key_list_1.clear()
         alt_control_key_list_2.clear()
