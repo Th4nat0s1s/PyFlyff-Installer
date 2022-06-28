@@ -30,6 +30,7 @@ mini_ftool_in_game_key = ""
 
 alt_control_key_list_1 = []
 alt_control_key_list_2 = []
+profile_list = []
 
 mini_ftool_window_name = ""
 hwndMain = ""
@@ -250,7 +251,7 @@ class MainWindow(QMainWindow):
         q_action_fullscreen.triggered.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         q_action_open_alt_client = QAction("Open Alt Client | Ctrl+Shift+PageUp", self)
-        q_action_open_alt_client.triggered.connect(self.create_profile)
+        q_action_open_alt_client.triggered.connect(self.create_open_alt_profile)
 
         q_action_reload_main_client = QAction("Reload Main Client | Ctrl+Shift+F5", self)
         q_action_reload_main_client.triggered.connect(lambda: self.browser.setUrl(QUrl(url)))
@@ -301,7 +302,7 @@ class MainWindow(QMainWindow):
         self.change_fullscreen.activated.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         self.new_client = QShortcut(QKeySequence("Ctrl+Shift+PgUp"), self)
-        self.new_client.activated.connect(self.create_profile)
+        self.new_client.activated.connect(self.create_open_alt_profile)
 
         self.create_shortcuts()
 
@@ -334,86 +335,6 @@ class MainWindow(QMainWindow):
         else:
             w.showFullScreen(self)
             bar.setVisible(False)
-
-    def create_profile(self):
-        global profile_file_location
-        global menubar_window
-
-        if not menubar_window:
-
-            menubar_window = True
-
-            alt_profile_window = Tk()
-
-            window_width = 300
-            window_height = 100
-
-            screen_width = alt_profile_window.winfo_screenwidth()
-            screen_height = alt_profile_window.winfo_screenheight()
-
-            x = (screen_width / 2) - (window_width / 2)
-            y = (screen_height / 2) - (window_height / 2)
-
-            alt_profile_window.geometry("300x100+" + str(int(x)) + "+" + str(int(y)))
-            alt_profile_window.minsize(300, 100)
-            alt_profile_window.attributes("-topmost", True)
-            alt_profile_window.title("Alt Profile")
-            alt_profile_window.iconbitmap(icon)
-
-            def open_profile_new_window():
-                global menubar_window
-                global profile_file_location
-                global url
-
-                try:
-                    if alt_profile_combobox.get() == "":
-
-                        messagebox.showerror("Error", "Field cannot be empty.")
-
-                    else:
-
-                        exist = any(alt_profile_combobox.get() in string for string in profile_list)
-
-                        if not exist:
-                            profile_list.append(alt_profile_combobox.get())
-                            alt_profile_combobox["values"] = profile_list
-
-                            f = open(profile_file_location, "a")
-                            f.write(alt_profile_combobox.get() + "\n")
-                            f.close()
-
-                        self.create_new_window(url, alt_profile_combobox.get())
-
-                        menubar_window = False
-                        alt_profile_window.destroy()
-
-                except Exception as e:
-                    messagebox.showerror("Error", str(e))
-
-            profile_list = []
-
-            if os.path.isfile(profile_file_location):
-                f = open(profile_file_location, "r")
-                content = f.read()
-                profile_list = content.split("\n")
-                profile_list.remove("")
-                f.close()
-            else:
-                f = open(profile_file_location, "w")
-                f.close()
-
-            alt_window_label = Label(alt_profile_window, text="Create a new profile or choose an existing one.")
-            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=profile_list)
-
-            alt_window_label.pack(fill=X, pady=5, padx=5)
-            alt_profile_combobox.pack(fill=X, pady=5, padx=5)
-
-            button_save = Button(text="Open", width=10, height=1, command=open_profile_new_window)
-            button_save.pack(pady=5)
-
-            alt_profile_window.wm_protocol("WM_DELETE_WINDOW",
-                                           lambda: self.destroy_toolbar_windows(alt_profile_window))
-            alt_profile_window.mainloop()
 
     @staticmethod
     def ftool_loop():
@@ -463,6 +384,7 @@ class MainWindow(QMainWindow):
         global mini_ftool_repeat_times
         global mini_ftool_interval
         global menubar_window
+        global profile_list
 
         if not menubar_window:
 
@@ -470,7 +392,7 @@ class MainWindow(QMainWindow):
 
             ftool_config_window = Tk()
 
-            window_width = 250
+            window_width = 290
             window_height = 250
 
             screen_width = ftool_config_window.winfo_screenwidth()
@@ -479,8 +401,8 @@ class MainWindow(QMainWindow):
             x = (screen_width / 2) - (window_width / 2)
             y = (screen_height / 2) - (window_height / 2)
 
-            ftool_config_window.geometry("250x250+" + str(int(x)) + "+" + str(int(y)))
-            ftool_config_window.minsize(250, 250)
+            ftool_config_window.geometry("290x250+" + str(int(x)) + "+" + str(int(y)))
+            ftool_config_window.minsize(290, 250)
             ftool_config_window.attributes("-topmost", True)
             ftool_config_window.title("Mini Ftool")
             ftool_config_window.iconbitmap(icon)
@@ -511,7 +433,7 @@ class MainWindow(QMainWindow):
                         and in_game_hotkey_entry.get()
                         and repeat_times_entry.get()
                         and interval_entry.get()
-                        and window_entry.get()) == "":
+                        and window_combobox.get()) == "":
 
                         messagebox.showerror("Error", "Fields cannot be empty.")
 
@@ -529,19 +451,23 @@ class MainWindow(QMainWindow):
                         mini_ftool_in_game_key = vk_code.get(in_game_hotkey_entry.get())
                         mini_ftool_repeat_times = int(repeat_times_entry.get())
                         mini_ftool_interval = float(interval_entry.get())
-                        mini_ftool_window_name = window_entry.get().replace("PyFlyff - ", "")
+                        mini_ftool_window_name = window_combobox.get()
 
                         self.ftool_key.setKey(mini_ftool_activation_key)
 
                         self.save_config_json(file=mini_ftool_json_file, values=(
                             activation_key_entry.get(), in_game_hotkey_entry.get(), repeat_times_entry.get(),
-                            interval_entry.get(), window_entry.get()))
+                            interval_entry.get(), window_combobox.get()))
+
+                        window_combobox["values"] = self.save_alt_profiles(window_combobox.get())
 
                         menubar_window = False
                         ftool_config_window.destroy()
 
                 except Exception as e:
                     messagebox.showerror("Error", str(e))
+
+            self.load_alt_profiles()
 
             explanation_label = Label(ftool_config_window, text="To stop the Mini Ftool, press the activation"
                                                                 "\nkey again.", anchor=W, justify="left")
@@ -551,20 +477,20 @@ class MainWindow(QMainWindow):
 
             frame.pack(fill=X, padx=5, pady=5)
 
-            activation_key_label = Label(frame, text="Activation Key:", width=15, anchor=W)
+            activation_key_label = Label(frame, text="Activation Key:", width=20, anchor=W)
             activation_key_entry = Entry(frame, width=20)
 
-            in_game_hotkey_label = Label(frame, text="In-Game Hotkey:", width=15, anchor=W)
+            in_game_hotkey_label = Label(frame, text="In-Game Hotkey:", width=20, anchor=W)
             in_game_hotkey_entry = Entry(frame, width=20)
 
-            repeat_times_label = Label(frame, text="Repeat:", width=15, anchor=W)
+            repeat_times_label = Label(frame, text="Repeat:", width=20, anchor=W)
             repeat_times_entry = Entry(frame, width=20)
 
-            interval_label = Label(frame, text="Interval:", width=15, anchor=W)
+            interval_label = Label(frame, text="Interval:", width=20, anchor=W)
             interval_entry = Entry(frame, width=20)
 
-            window_label = Label(frame, text="Window:", width=15, anchor=W)
-            window_entry = Entry(frame, width=20)
+            window_label = Label(frame, text="Character Name or Main:", width=20, anchor=W)
+            window_combobox = ttk.Combobox(frame, values=profile_list, width=17)
 
             activation_key_label.grid(row=0, column=0, pady=5)
             activation_key_entry.grid(row=0, column=1, pady=5)
@@ -579,7 +505,7 @@ class MainWindow(QMainWindow):
             interval_entry.grid(row=3, column=1, pady=5)
 
             window_label.grid(row=4, column=0, pady=5)
-            window_entry.grid(row=4, column=1, pady=5)
+            window_combobox.grid(row=4, column=1, pady=5)
 
             button_save = Button(text="Save", width=10, height=1, command=save)
             button_save.pack()
@@ -593,12 +519,12 @@ class MainWindow(QMainWindow):
                         in_game_hotkey_entry.insert(0, data["in_game_key"])
                         repeat_times_entry.insert(0, data["repeat_times"])
                         interval_entry.insert(0, data["interval"])
-                        window_entry.insert(0, data["window"])
+                        window_combobox.insert(0, data["window"])
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-            if window_entry.get() == "":
-                window_entry.insert(0, "Main")
+            if window_combobox.get() == "":
+                window_combobox.insert(0, "Main")
 
             ftool_config_window.wm_protocol("WM_DELETE_WINDOW",
                                             lambda: self.destroy_toolbar_windows(ftool_config_window))
@@ -606,6 +532,7 @@ class MainWindow(QMainWindow):
 
     def alt_control_config(self):
         global menubar_window
+        global profile_list
 
         if not menubar_window:
 
@@ -656,7 +583,7 @@ class MainWindow(QMainWindow):
                 try:
                     if (main_client_hotkey_entry.get()
                         and alt_client_hotkey_entry.get()
-                        and alt_window_entry.get()) == "":
+                        and alt_window_combobox.get()) == "":
 
                         messagebox.showerror("Error", "Fields cannot be empty.")
 
@@ -673,6 +600,11 @@ class MainWindow(QMainWindow):
 
                         messagebox.showerror("Error", "Main Client HotKey from Alt Control cannot "
                                                       "be the same as the Mini Ftool Activation Key.")
+
+                    elif alt_window_combobox.get() == "Main":
+
+                        messagebox.showerror("Error", "Alt Control cannot be set to Main Client.")
+
                     else:
 
                         key1_counter = 1
@@ -689,11 +621,13 @@ class MainWindow(QMainWindow):
                             globals()["acig" + str(key2_counter)] = vk_code.get(key2)
                             key2_counter += 1
 
-                        alt_window_name = alt_window_entry.get().replace("PyFlyff - ", "")
+                        alt_window_name = alt_window_combobox.get()
 
                         self.save_config_json(file=alt_control_json_file,
                                               values=(main_client_hotkey_entry.get(), alt_client_hotkey_entry.get(),
-                                                      alt_window_entry.get()))
+                                                      alt_window_combobox.get()))
+
+                        alt_window_combobox["values"] = self.save_alt_profiles(alt_window_combobox.get())
 
                         alt_control_boolean = True
                         menubar_window = False
@@ -709,6 +643,13 @@ class MainWindow(QMainWindow):
                 self.clear_alt_control_shortcut_keys()
 
                 alt_control_boolean = False
+
+            self.load_alt_profiles()
+
+            list_of_profiles = profile_list
+
+            if "Main" in list_of_profiles:
+                list_of_profiles.remove("Main")
 
             explanation_label = Label(alt_control_config_window, text="You can assign multiple keys (up to 20 keys)."
                                                                       "\n\nSeparate each key with a comma '','' "
@@ -730,8 +671,8 @@ class MainWindow(QMainWindow):
             alt_client_hotkey_label = Label(frame, text="Alt Client Hotkey(s):", width=20, anchor=W)
             alt_client_hotkey_entry = Entry(frame, width=22)
 
-            alt_window_label = Label(frame, text="Alt Window:", width=20, anchor=W)
-            alt_window_entry = Entry(frame, width=22)
+            alt_window_label = Label(frame, text="Character Name:", width=20, anchor=W)
+            alt_window_combobox = ttk.Combobox(frame, values=list_of_profiles, width=19)
 
             main_client_hotkey_label.grid(row=0, column=0, pady=5)
             main_client_hotkey_entry.grid(row=0, column=1, pady=5)
@@ -740,7 +681,7 @@ class MainWindow(QMainWindow):
             alt_client_hotkey_entry.grid(row=1, column=1, pady=5)
 
             alt_window_label.grid(row=2, column=0, pady=5)
-            alt_window_entry.grid(row=2, column=1, pady=5)
+            alt_window_combobox.grid(row=2, column=1, pady=5)
 
             button_start = Button(text="Start", width=10, height=1, command=start)
             button_start.pack(side=LEFT, padx=25)
@@ -755,7 +696,7 @@ class MainWindow(QMainWindow):
 
                         main_client_hotkey_entry.insert(0, data["activation_key"])
                         alt_client_hotkey_entry.insert(0, data["in_game_key"])
-                        alt_window_entry.insert(0, data["alt_window"])
+                        alt_window_combobox.insert(0, data["alt_window"])
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
@@ -1040,6 +981,103 @@ class MainWindow(QMainWindow):
         self.alt_control_key_20 = QShortcut(self)
         self.alt_control_key_20.activated.connect(
             lambda: self.multithreading(lambda: self.send_alt_control_command(globals()["acig20"])))
+
+    def create_open_alt_profile(self):
+        global profile_file_location
+        global menubar_window
+        global profile_list
+
+        if not menubar_window:
+
+            menubar_window = True
+
+            alt_profile_window = Tk()
+
+            window_width = 300
+            window_height = 100
+
+            screen_width = alt_profile_window.winfo_screenwidth()
+            screen_height = alt_profile_window.winfo_screenheight()
+
+            x = (screen_width / 2) - (window_width / 2)
+            y = (screen_height / 2) - (window_height / 2)
+
+            alt_profile_window.geometry("300x100+" + str(int(x)) + "+" + str(int(y)))
+            alt_profile_window.minsize(300, 100)
+            alt_profile_window.attributes("-topmost", True)
+            alt_profile_window.title("Alt Profile")
+            alt_profile_window.iconbitmap(icon)
+
+            def open_profile_new_window():
+                global menubar_window
+                global profile_file_location
+                global profile_list
+                global url
+
+                try:
+                    if alt_profile_combobox.get() == "":
+
+                        messagebox.showerror("Error", "Field cannot be empty.")
+
+                    else:
+
+                        alt_profile_combobox["values"] = self.save_alt_profiles(alt_profile_combobox.get())
+
+                        self.create_new_window(url, alt_profile_combobox.get())
+
+                        menubar_window = False
+                        alt_profile_window.destroy()
+
+                except Exception as e:
+                    messagebox.showerror("Error", str(e))
+
+            self.load_alt_profiles()
+
+            list_of_profiles = profile_list
+
+            if "Main" in list_of_profiles:
+                list_of_profiles.remove("Main")
+
+            alt_window_label = Label(alt_profile_window, text="Create a new profile or choose an existing one.")
+            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=list_of_profiles)
+
+            alt_window_label.pack(fill=X, pady=5, padx=5)
+            alt_profile_combobox.pack(fill=X, pady=5, padx=5)
+
+            button_save = Button(text="Open", width=10, height=1, command=open_profile_new_window)
+            button_save.pack(pady=5)
+
+            alt_profile_window.wm_protocol("WM_DELETE_WINDOW",
+                                           lambda: self.destroy_toolbar_windows(alt_profile_window))
+            alt_profile_window.mainloop()
+
+    @staticmethod
+    def save_alt_profiles(combobox):
+        exist = any(combobox in string for string in profile_list)
+
+        if not exist:
+            profile_list.append(combobox)
+
+            f = open(profile_file_location, "a")
+            f.write(combobox + "\n")
+            f.close()
+
+            return profile_list
+
+    @staticmethod
+    def load_alt_profiles():
+        global profile_list
+
+        if os.path.isfile(profile_file_location):
+            f = open(profile_file_location, "r")
+            content = f.read()
+            profile_list = content.split("\n")
+            if "" in profile_list:
+                profile_list.remove("")
+            f.close()
+        else:
+            f = open(profile_file_location, "w")
+            f.close()
 
 
 app = QApplication(sys.argv)
