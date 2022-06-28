@@ -56,16 +56,18 @@ Then create a .BAT file with this:
 IF your Python installation is ACCESSIBLE from Windows Env variables:
 
 pyinstaller PyFlyff.py --icon=icons/PyFlyff.ico --onedir --noconsole
+xcopy icons dist\PyFlyff\icons\
 
 IF your Python installation is NOT accessible from Windows Env variables, then you will have to fully tell both python.exe and pyinstaller script locations in the command line:
 
 Path/to/your/python.exe path/to/your/pyinstaller.py PyFlyff.py --icon=icons/PyFlyff.ico --onedir --noconsole
+xcopy icons dist\PyFlyff\icons\
 
 pyinstaller.py script is located in your Python installation folder - Scripts
 
 Save both .BAT and put it inside the project folder and run it, wait for the compilation to finish and the resulted folder named "PyFlyff" will appear inside the dist folder created by pyinstaller inside the project folder.
 
-After the compilation is finished, copy the icons folder inside the project folder to the created PyFlyff folder by pyinstaller inside the dist folder, else there will be bugs since tkinter is using the icon as well.
+After the compilation is finished, make sure the folder "icons" is inside the generated PyFlyff folder inside the dist folder, else it will give an error when opening the client.
 
 # Android Client
 
