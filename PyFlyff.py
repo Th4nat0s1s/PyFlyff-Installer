@@ -392,7 +392,7 @@ class MainWindow(QMainWindow):
 
             ftool_config_window = Tk()
 
-            window_width = 290
+            window_width = 300
             window_height = 250
 
             screen_width = ftool_config_window.winfo_screenwidth()
@@ -401,8 +401,8 @@ class MainWindow(QMainWindow):
             x = (screen_width / 2) - (window_width / 2)
             y = (screen_height / 2) - (window_height / 2)
 
-            ftool_config_window.geometry("290x250+" + str(int(x)) + "+" + str(int(y)))
-            ftool_config_window.minsize(290, 250)
+            ftool_config_window.geometry("300x250+" + str(int(x)) + "+" + str(int(y)))
+            ftool_config_window.minsize(300, 250)
             ftool_config_window.attributes("-topmost", True)
             ftool_config_window.title("Mini Ftool")
             ftool_config_window.iconbitmap(icon)
@@ -477,19 +477,19 @@ class MainWindow(QMainWindow):
 
             frame.pack(fill=X, padx=5, pady=5)
 
-            activation_key_label = Label(frame, text="Activation Key:", width=20, anchor=W)
+            activation_key_label = Label(frame, text="Activation Key:", width=22, anchor=W)
             activation_key_entry = Entry(frame, width=20)
 
-            in_game_hotkey_label = Label(frame, text="In-Game Hotkey:", width=20, anchor=W)
+            in_game_hotkey_label = Label(frame, text="In-Game Hotkey:", width=22, anchor=W)
             in_game_hotkey_entry = Entry(frame, width=20)
 
-            repeat_times_label = Label(frame, text="Repeat:", width=20, anchor=W)
+            repeat_times_label = Label(frame, text="Repeat:", width=22, anchor=W)
             repeat_times_entry = Entry(frame, width=20)
 
-            interval_label = Label(frame, text="Interval:", width=20, anchor=W)
+            interval_label = Label(frame, text="Interval:", width=22, anchor=W)
             interval_entry = Entry(frame, width=20)
 
-            window_label = Label(frame, text="Character Name or Main:", width=20, anchor=W)
+            window_label = Label(frame, text="Alt Profile Name or Main:", width=22, anchor=W)
             window_combobox = ttk.Combobox(frame, values=profile_list, width=17)
 
             activation_key_label.grid(row=0, column=0, pady=5)
@@ -671,7 +671,7 @@ class MainWindow(QMainWindow):
             alt_client_hotkey_label = Label(frame, text="Alt Client Hotkey(s):", width=20, anchor=W)
             alt_client_hotkey_entry = Entry(frame, width=22)
 
-            alt_window_label = Label(frame, text="Character Name:", width=20, anchor=W)
+            alt_window_label = Label(frame, text="Alt Profile Name:", width=20, anchor=W)
             alt_window_combobox = ttk.Combobox(frame, values=list_of_profiles, width=19)
 
             main_client_hotkey_label.grid(row=0, column=0, pady=5)
