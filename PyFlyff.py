@@ -5,7 +5,7 @@ import time
 import os
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction, QErrorMessage
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from PyQt5.QtGui import QKeySequence, QIcon
 
@@ -584,15 +584,18 @@ class MainWindow(QMainWindow):
             button_save = Button(text="Save", width=10, height=1, command=save)
             button_save.pack()
 
-            if mini_ftool_json_file_location.exists():
-                with open(mini_ftool_json_file_location) as js:
-                    data = json.load(js)
+            try:
+                if mini_ftool_json_file_location.exists():
+                    with open(mini_ftool_json_file_location) as js:
+                        data = json.load(js)
 
-                    activation_key_entry.insert(0, data["activation_key"])
-                    in_game_hotkey_entry.insert(0, data["in_game_key"])
-                    repeat_times_entry.insert(0, data["repeat_times"])
-                    interval_entry.insert(0, data["interval"])
-                    window_entry.insert(0, data["window"])
+                        activation_key_entry.insert(0, data["activation_key"])
+                        in_game_hotkey_entry.insert(0, data["in_game_key"])
+                        repeat_times_entry.insert(0, data["repeat_times"])
+                        interval_entry.insert(0, data["interval"])
+                        window_entry.insert(0, data["window"])
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
             if window_entry.get() == "":
                 window_entry.insert(0, "Main")
@@ -745,13 +748,16 @@ class MainWindow(QMainWindow):
             button_stop = Button(text="Stop", width=10, height=1, command=stop)
             button_stop.pack(side=RIGHT, padx=25)
 
-            if alt_control_json_file_location.exists():
-                with open(alt_control_json_file_location) as js:
-                    data = json.load(js)
+            try:
+                if alt_control_json_file_location.exists():
+                    with open(alt_control_json_file_location) as js:
+                        data = json.load(js)
 
-                    main_client_hotkey_entry.insert(0, data["activation_key"])
-                    alt_client_hotkey_entry.insert(0, data["in_game_key"])
-                    alt_window_entry.insert(0, data["alt_window"])
+                        main_client_hotkey_entry.insert(0, data["activation_key"])
+                        alt_client_hotkey_entry.insert(0, data["in_game_key"])
+                        alt_window_entry.insert(0, data["alt_window"])
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
             alt_control_config_window.wm_protocol("WM_DELETE_WINDOW",
                                                   lambda: self.destroy_toolbar_windows(alt_control_config_window))
@@ -895,23 +901,30 @@ class MainWindow(QMainWindow):
 
             self.clear_alt_control_shortcut_keys()
 
-    @staticmethod
-    def load_user_agent():
+    def load_user_agent(self):
         global user_agent
         global user_agent_json_file_location
 
-        if user_agent_json_file_location.exists():
-            with open(user_agent_json_file_location) as js:
-                data = json.load(js)
-                user_agent = data["user_agent"]
+        try:
+            if user_agent_json_file_location.exists():
+                with open(user_agent_json_file_location) as js:
+                    data = json.load(js)
+                    user_agent = data["user_agent"]
 
-        if user_agent == "":
-
-            return default_user_agent
-
-        else:
-
-            return user_agent
+            if user_agent == "":
+                return default_user_agent
+            else:
+                return user_agent
+        except KeyError as e:
+            error_dialog = QErrorMessage()
+            error_dialog.showMessage("Key not found in UserAgent.json: " + str(e) + "\nMake sure the key is valid "
+                                                                                    "inside the file, or delete "
+                                                                                    "the file "
+                                                                                    "''C:/PyFlyff/UserAgent.json'' "
+                                                                                    "to create a new one by setting "
+                                                                                    "a new User Agent.")
+            error_dialog.setWindowIcon(QIcon(icon))
+            self.windows.append(error_dialog)
 
     def clear_alt_control_shortcut_keys(self):
         global alt_control_key_list_1
