@@ -213,6 +213,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         self.setWindowIcon(QIcon(icon))
+        self.setMinimumSize(640, 480)
         self.showMaximized()
 
         menu_bar = self.menuBar()
@@ -320,6 +321,7 @@ class MainWindow(QMainWindow):
         self.new_window.load(QUrl(link))
         self.new_window.setWindowTitle("PyFlyff - " + wn)
         self.new_window.setWindowIcon(QIcon(icon))
+        self.new_window.setMinimumSize(640, 480)
         self.new_window.showMaximized()
 
         self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
