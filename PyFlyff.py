@@ -44,6 +44,7 @@ mini_ftool_interval = 0
 start_mini_ftool_loop = False
 alt_control_boolean = False
 menubar_window = False
+reload_client = False
 
 profile_file_location = "C:/PyFlyff/profiles.txt"
 
@@ -207,20 +208,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
 
         global user_agent
+        global reload_client
 
         super(MainWindow, self).__init__()
 
-        self.browser = QWebEngineView()
-
-        main_profile = QWebEngineProfile("MainProfile", self.browser)
-        main_profile.setCachePath("C:/PyFlyff/PyFlyffMain")
-        main_profile.setPersistentStoragePath("C:/PyFlyff/PyFlyffMain")
-        main_page = QWebEnginePage(main_profile, self.browser)
-
-        self.browser.setPage(main_page)
-        self.browser.setUrl(QUrl(url))
-        self.setCentralWidget(self.browser)
-        self.setWindowTitle("PyFlyff - Main")
         self.setWindowIcon(QIcon(icon))
         self.showMaximized()
 
@@ -251,15 +242,20 @@ class MainWindow(QMainWindow):
         q_action_fullscreen.triggered.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         q_action_open_alt_client = QAction("Open Alt Client | Ctrl+Shift+PageUp", self)
-        q_action_open_alt_client.triggered.connect(self.create_open_alt_profile)
+        q_action_open_alt_client.triggered.connect(lambda: self.create_open_client_profile("Alt"))
+
+        q_action_change_main_client_profile = QAction("Change Main Client Profile", self)
+        q_action_change_main_client_profile.triggered.connect(lambda: self.create_open_client_profile("Main"))
 
         q_action_reload_main_client = QAction("Reload Main Client | Ctrl+Shift+F5", self)
-        q_action_reload_main_client.triggered.connect(lambda: self.browser.setUrl(QUrl(url)))
+        q_action_reload_main_client.triggered.connect(
+            lambda x: self.browser.setUrl(QUrl(url)) if reload_client else None)
 
         menu_client = menu_bar.addMenu("Client")
         menu_client.addAction(q_action_user_agent)
         menu_client.addAction(q_action_fullscreen)
         menu_client.addAction(q_action_open_alt_client)
+        menu_client.addAction(q_action_change_main_client_profile)
         menu_client.addAction(q_action_reload_main_client)
         menu_client.setToolTipsVisible(True)
 
@@ -302,20 +298,22 @@ class MainWindow(QMainWindow):
         self.change_fullscreen.activated.connect(lambda: self.fullscreen(MainWindow, menu_bar))
 
         self.new_client = QShortcut(QKeySequence("Ctrl+Shift+PgUp"), self)
-        self.new_client.activated.connect(self.create_open_alt_profile)
+        self.new_client.activated.connect(lambda: self.create_open_client_profile("Alt"))
 
         self.create_shortcuts()
 
         self.windows = []
 
-        self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
+        self.create_open_client_profile("Main")
 
     def create_new_window(self, link, wn):
         self.new_window = QWebEngineView()
 
+        client_folder = "C:/PyFlyff/" + wn.replace(" ", "")
+
         alt_profile = QWebEngineProfile(wn.replace(" ", ""), self.new_window)
-        alt_profile.setCachePath("C:/PyFlyff/" + wn.replace(" ", ""))
-        alt_profile.setPersistentStoragePath("C:/PyFlyff/" + wn.replace(" ", ""))
+        alt_profile.setCachePath(client_folder)
+        alt_profile.setPersistentStoragePath(client_folder)
         alt_page = QWebEnginePage(alt_profile, self.new_window)
 
         self.new_window.setPage(alt_page)
@@ -601,10 +599,6 @@ class MainWindow(QMainWindow):
                         messagebox.showerror("Error", "Main Client HotKey from Alt Control cannot "
                                                       "be the same as the Mini Ftool Activation Key.")
 
-                    elif alt_window_combobox.get() == "Main":
-
-                        messagebox.showerror("Error", "Alt Control cannot be set to Main Client.")
-
                     else:
 
                         key1_counter = 1
@@ -646,11 +640,6 @@ class MainWindow(QMainWindow):
 
             self.load_alt_profiles()
 
-            list_of_profiles = profile_list
-
-            if "Main" in list_of_profiles:
-                list_of_profiles.remove("Main")
-
             explanation_label = Label(alt_control_config_window, text="You can assign multiple keys (up to 20 keys)."
                                                                       "\n\nSeparate each key with a comma '','' "
                                                                       "if more than one."
@@ -672,7 +661,7 @@ class MainWindow(QMainWindow):
             alt_client_hotkey_entry = Entry(frame, width=22)
 
             alt_window_label = Label(frame, text="Alt Profile Name:", width=20, anchor=W)
-            alt_window_combobox = ttk.Combobox(frame, values=list_of_profiles, width=19)
+            alt_window_combobox = ttk.Combobox(frame, values=profile_list, width=19)
 
             main_client_hotkey_label.grid(row=0, column=0, pady=5)
             main_client_hotkey_entry.grid(row=0, column=1, pady=5)
@@ -982,7 +971,7 @@ class MainWindow(QMainWindow):
         self.alt_control_key_20.activated.connect(
             lambda: self.multithreading(lambda: self.send_alt_control_command(globals()["acig20"])))
 
-    def create_open_alt_profile(self):
+    def create_open_client_profile(self, client_type):
         global profile_file_location
         global menubar_window
         global profile_list
@@ -1013,6 +1002,7 @@ class MainWindow(QMainWindow):
                 global profile_file_location
                 global profile_list
                 global url
+                global reload_client
 
                 try:
                     if alt_profile_combobox.get() == "":
@@ -1023,7 +1013,31 @@ class MainWindow(QMainWindow):
 
                         alt_profile_combobox["values"] = self.save_alt_profiles(alt_profile_combobox.get())
 
-                        self.create_new_window(url, alt_profile_combobox.get())
+                        if client_type == "Alt":
+
+                            self.create_new_window(url, alt_profile_combobox.get())
+                        else:
+
+                            self.browser = None
+
+                            self.browser = QWebEngineView()
+
+                            self.setCentralWidget(self.browser)
+
+                            client_folder = "C:/PyFlyff/" + alt_profile_combobox.get().replace(" ", "")
+
+                            main_profile = QWebEngineProfile(alt_profile_combobox.get().replace(" ", ""), self.browser)
+                            main_profile.setCachePath(client_folder)
+                            main_profile.setPersistentStoragePath(client_folder)
+                            main_page = QWebEnginePage(main_profile, self.browser)
+
+                            self.browser.setPage(main_page)
+                            self.browser.setUrl(QUrl(url))
+                            self.setWindowTitle("PyFlyff - " + alt_profile_combobox.get())
+
+                            self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
+
+                            reload_client = True
 
                         menubar_window = False
                         alt_profile_window.destroy()
@@ -1033,13 +1047,8 @@ class MainWindow(QMainWindow):
 
             self.load_alt_profiles()
 
-            list_of_profiles = profile_list
-
-            if "Main" in list_of_profiles:
-                list_of_profiles.remove("Main")
-
             alt_window_label = Label(alt_profile_window, text="Create a new profile or choose an existing one.")
-            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=list_of_profiles)
+            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=profile_list)
 
             alt_window_label.pack(fill=X, pady=5, padx=5)
             alt_profile_combobox.pack(fill=X, pady=5, padx=5)
