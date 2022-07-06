@@ -46,6 +46,7 @@ alt_control_boolean = False
 menubar_window = False
 reload_client = False
 
+data_folder = "C:/PyFlyff"
 profile_file_location = "C:/PyFlyff/profiles.txt"
 
 mini_ftool_json_file = "MiniFToolConfig.json"
@@ -1078,6 +1079,7 @@ class MainWindow(QMainWindow):
     @staticmethod
     def load_alt_profiles():
         global profile_list
+        global data_folder
 
         if os.path.isfile(profile_file_location):
             f = open(profile_file_location, "r")
@@ -1087,8 +1089,10 @@ class MainWindow(QMainWindow):
                 profile_list.remove("")
             f.close()
         else:
-            f = open(profile_file_location, "w")
-            f.close()
+            if not os.path.isdir(data_folder):
+                os.makedirs(data_folder)
+                f = open(profile_file_location, "w")
+                f.close()
 
 
 app = QApplication(sys.argv)
