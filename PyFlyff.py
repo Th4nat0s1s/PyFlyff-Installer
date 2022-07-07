@@ -4,7 +4,7 @@ import sys
 import time
 import os
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction, QErrorMessage
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from PyQt5.QtGui import QKeySequence, QIcon
@@ -44,7 +44,8 @@ mini_ftool_interval = 0
 start_mini_ftool_loop = False
 alt_control_boolean = False
 menubar_window = False
-reload_client = False
+can_reload_client = False
+is_on_top = False
 
 data_folder = "C:/PyFlyff"
 profile_file_location = "C:/PyFlyff/profiles.txt"
@@ -209,15 +210,16 @@ class MainWindow(QMainWindow):
     def __init__(self):
 
         global user_agent
-        global reload_client
+        global can_reload_client
 
         super(MainWindow, self).__init__()
 
+        self.browser = None
         self.setWindowIcon(QIcon(icon))
         self.setMinimumSize(640, 480)
         self.showMaximized()
 
-        menu_bar = self.menuBar()
+        self.menu_bar = self.menuBar()
 
         ftool = QAction("Mini FTool", self)
         ftool.triggered.connect(lambda: self.multithreading(self.ftool_config))
@@ -228,7 +230,7 @@ class MainWindow(QMainWindow):
         clear_keys = QAction("Reset Hotkeys", self)
         clear_keys.triggered.connect(self.reset_hotkeys)
 
-        menu_tools = menu_bar.addMenu("Tools")
+        menu_tools = self.menu_bar.addMenu("Tools")
         menu_tools.addAction(ftool)
         menu_tools.addAction(alt_control)
         menu_tools.addAction(clear_keys)
@@ -241,7 +243,7 @@ class MainWindow(QMainWindow):
         q_action_user_agent.triggered.connect(lambda: self.multithreading(self.set_user_agent))
 
         q_action_fullscreen = QAction("Fullscreen | Ctrl+Shift+F11", self)
-        q_action_fullscreen.triggered.connect(lambda: self.fullscreen(MainWindow, menu_bar))
+        q_action_fullscreen.triggered.connect(self.fullscreen)
 
         q_action_open_alt_client = QAction("Open Alt Client | Ctrl+Shift+PageUp", self)
         q_action_open_alt_client.triggered.connect(lambda: self.create_open_client_profile("Alt"))
@@ -249,16 +251,15 @@ class MainWindow(QMainWindow):
         q_action_change_main_client_profile = QAction("Change Main Client Profile", self)
         q_action_change_main_client_profile.triggered.connect(lambda: self.create_open_client_profile("Main"))
 
-        q_action_reload_main_client = QAction("Reload Main Client | Ctrl+Shift+F5", self)
-        q_action_reload_main_client.triggered.connect(
-            lambda x: self.browser.setUrl(QUrl(url)) if reload_client else None)
+        q_action_always_on_top = QAction("Always on Top On/Off", self)
+        q_action_always_on_top.triggered.connect(self.always_on_top)
 
-        menu_client = menu_bar.addMenu("Client")
+        menu_client = self.menu_bar.addMenu("Client")
         menu_client.addAction(q_action_user_agent)
         menu_client.addAction(q_action_fullscreen)
         menu_client.addAction(q_action_open_alt_client)
         menu_client.addAction(q_action_change_main_client_profile)
-        menu_client.addAction(q_action_reload_main_client)
+        menu_client.addAction(q_action_always_on_top)
         menu_client.setToolTipsVisible(True)
 
         q_action_flyffipedia = QAction("Flyffipedia", self)
@@ -285,7 +286,7 @@ class MainWindow(QMainWindow):
         q_action_skillulator.triggered.connect(
             lambda: self.create_new_window("https://skillulator.com/", "Skillulator"))
 
-        menu_community = menu_bar.addMenu("Community")
+        menu_community = self.menu_bar.addMenu("Community")
         menu_community.addAction(q_action_flyffipedia)
         menu_community.addAction(q_action_madrigalmaps)
         menu_community.addAction(q_action_flyffulator)
@@ -294,10 +295,10 @@ class MainWindow(QMainWindow):
         menu_community.addAction(q_action_skillulator)
 
         self.reload_client = QShortcut(QKeySequence("Ctrl+Shift+F5"), self)
-        self.reload_client.activated.connect(lambda: self.browser.setUrl(QUrl(url)))
+        self.reload_client.activated.connect(self.reload_main_client)
 
         self.change_fullscreen = QShortcut(QKeySequence("Ctrl+Shift+F11"), self)
-        self.change_fullscreen.activated.connect(lambda: self.fullscreen(MainWindow, menu_bar))
+        self.change_fullscreen.activated.connect(self.fullscreen)
 
         self.new_client = QShortcut(QKeySequence("Ctrl+Shift+PgUp"), self)
         self.new_client.activated.connect(lambda: self.create_open_client_profile("Alt"))
@@ -309,33 +310,35 @@ class MainWindow(QMainWindow):
         self.create_open_client_profile("Main")
 
     def create_new_window(self, link, wn):
-        self.new_window = QWebEngineView()
+        new_window = QWebEngineView()
+        new_window.setAttribute(Qt.WA_DeleteOnClose)
+        new_window.destroyed.connect(lambda: self.windows.remove(new_window))
 
         client_folder = "C:/PyFlyff/" + wn.replace(" ", "")
 
-        alt_profile = QWebEngineProfile(wn.replace(" ", ""), self.new_window)
+        alt_profile = QWebEngineProfile(wn.replace(" ", ""), new_window)
         alt_profile.setCachePath(client_folder)
         alt_profile.setPersistentStoragePath(client_folder)
-        alt_page = QWebEnginePage(alt_profile, self.new_window)
+        alt_page = QWebEnginePage(alt_profile, new_window)
 
-        self.new_window.setPage(alt_page)
-        self.new_window.load(QUrl(link))
-        self.new_window.setWindowTitle("PyFlyff - " + wn)
-        self.new_window.setWindowIcon(QIcon(icon))
-        self.new_window.setMinimumSize(640, 480)
-        self.new_window.showMaximized()
+        new_window.setPage(alt_page)
+        new_window.load(QUrl(link))
+        new_window.setWindowTitle("PyFlyff - " + wn)
+        new_window.setWindowIcon(QIcon(icon))
+        new_window.setMinimumSize(640, 480)
+        new_window.showMaximized()
 
-        self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
+        new_window.page().profile().setHttpUserAgent(self.load_user_agent())
 
-        self.windows.append(self.new_window)
+        self.windows.append(new_window)
 
-    def fullscreen(self, w, bar):
-        if w.isFullScreen(self):
-            w.showMaximized(self)
-            bar.setVisible(True)
+    def fullscreen(self):
+        if self.isFullScreen():
+            self.showMaximized()
+            self.menu_bar.setVisible(True)
         else:
-            w.showFullScreen(self)
-            bar.setVisible(False)
+            self.showFullScreen()
+            self.menu_bar.setVisible(False)
 
     @staticmethod
     def ftool_loop():
@@ -523,9 +526,6 @@ class MainWindow(QMainWindow):
                         window_combobox.insert(0, data["window"])
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-
-            if window_combobox.get() == "":
-                window_combobox.insert(0, "Main")
 
             ftool_config_window.wm_protocol("WM_DELETE_WINDOW",
                                             lambda: self.destroy_toolbar_windows(ftool_config_window))
@@ -771,11 +771,8 @@ class MainWindow(QMainWindow):
 
             user_agent_config_window.wm_protocol("WM_DELETE_WINDOW",
                                                  lambda: self.destroy_toolbar_windows(user_agent_config_window))
-            user_agent_config_window.mainloop()
 
-    @staticmethod
-    def multithreading(function):
-        threading.Thread(target=function).start()
+            user_agent_config_window.mainloop()
 
     @staticmethod
     def save_config_json(**kwargs):
@@ -1005,7 +1002,7 @@ class MainWindow(QMainWindow):
                 global profile_file_location
                 global profile_list
                 global url
-                global reload_client
+                global can_reload_client
 
                 try:
                     if alt_profile_combobox.get() == "":
@@ -1040,7 +1037,7 @@ class MainWindow(QMainWindow):
 
                             self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
 
-                            reload_client = True
+                            can_reload_client = True
 
                         menubar_window = False
                         alt_profile_window.destroy()
@@ -1093,6 +1090,33 @@ class MainWindow(QMainWindow):
                 os.makedirs(data_folder)
                 f = open(profile_file_location, "w")
                 f.close()
+
+    def always_on_top(self):
+        global is_on_top
+
+        if not is_on_top:
+            self.setWindowFlag(Qt.WindowStaysOnTopHint)
+            self.show()
+            is_on_top = True
+        else:
+            self.setWindowFlags(
+                Qt.Window |
+                Qt.WindowTitleHint |
+                Qt.WindowCloseButtonHint |
+                Qt.WindowMinimizeButtonHint |
+                Qt.WindowMaximizeButtonHint)
+            self.show()
+            is_on_top = False
+
+    def reload_main_client(self):
+        global can_reload_client
+
+        if can_reload_client:
+            self.browser.setUrl(QUrl(url))
+
+    @staticmethod
+    def multithreading(function):
+        threading.Thread(target=function).start()
 
 
 app = QApplication(sys.argv)
