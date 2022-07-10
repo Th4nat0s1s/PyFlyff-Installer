@@ -15,9 +15,6 @@ XyTGmhWzeQjNKnTeTD1UpFC3zubqurjtwt
 Solana:
 41hkroUbrDfYGh8Pmfd7gVAyXMTvFC8eacCyLyD1VHn7
 
-SHIBA INU: 
-0x0fd9b73f25572b54de686c28e1050e25eed552e9
-
 Dogecoin: 
 D6nnCqVUyUtL7FLtrmhjh9yLCcN54QjSuZ
 
