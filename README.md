@@ -3,13 +3,26 @@ QtWebEngine to play Flyff Universe
 
 # If you wish to support me :)
 
-Bitcoin: 1JDWqkVGeAw9a6ikUkk8q9n6vwA7pft6Ke
-Ethereum: 0x0fd9b73f25572b54de686c28e1050e25eed552e9
-Cardano: DdzFFzCqrhsnDjsH5eN1YSM12dZvthscr5fN24HnMTHDcJi5dEHicQoTrm8ypQXD6e5GGFsXmngBFTvE5N1PCqXHAnwCxgyB82j1dpdx
-Monero: 85ASAbzQqRoMgA8CZgXCtk34no5FDMyzbNrj1Kniv23R5BUwaC7y2FPMCzNv6cc1VR4gJZYwiNrg4fMiBmBrQznd4irRNCe
-Dash: XyTGmhWzeQjNKnTeTD1UpFC3zubqurjtwt
-SHIBA INU: 0x0fd9b73f25572b54de686c28e1050e25eed552e9
-Dogecoin: D6nnCqVUyUtL7FLtrmhjh9yLCcN54QjSuZ
+Bitcoin: 
+1JDWqkVGeAw9a6ikUkk8q9n6vwA7pft6Ke
+
+Ethereum: 
+0x0fd9b73f25572b54de686c28e1050e25eed552e9
+
+Cardano: 
+DdzFFzCqrhsnDjsH5eN1YSM12dZvthscr5fN24HnMTHDcJi5dEHicQoTrm8ypQXD6e5GGFsXmngBFTvE5N1PCqXHAnwCxgyB82j1dpdx
+
+Monero: 
+85ASAbzQqRoMgA8CZgXCtk34no5FDMyzbNrj1Kniv23R5BUwaC7y2FPMCzNv6cc1VR4gJZYwiNrg4fMiBmBrQznd4irRNCe
+
+Dash: 
+XyTGmhWzeQjNKnTeTD1UpFC3zubqurjtwt
+
+SHIBA INU: 
+0x0fd9b73f25572b54de686c28e1050e25eed552e9
+
+Dogecoin: 
+D6nnCqVUyUtL7FLtrmhjh9yLCcN54QjSuZ
 
 # Client Hotkeys
 
