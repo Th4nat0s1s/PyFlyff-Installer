@@ -18,12 +18,6 @@ SHIBA INU:
 Dogecoin: 
 D6nnCqVUyUtL7FLtrmhjh9yLCcN54QjSuZ
 
-Cardano: 
-DdzFFzCqrhsnDjsH5eN1YSM12dZvthscr5fN24HnMTHDcJi5dEHicQoTrm8ypQXD6e5GGFsXmngBFTvE5N1PCqXHAnwCxgyB82j1dpdx
-
-Monero: 
-85ASAbzQqRoMgA8CZgXCtk34no5FDMyzbNrj1Kniv23R5BUwaC7y2FPMCzNv6cc1VR4gJZYwiNrg4fMiBmBrQznd4irRNCe
-
 # Client Hotkeys
 
 Ctrl+Shift+F5 = reload client back to https://universe.flyff.com/play
