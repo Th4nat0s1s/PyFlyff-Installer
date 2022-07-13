@@ -27,6 +27,7 @@ default_user_agent = "None"
 
 mini_ftool_activation_key = ""
 mini_ftool_in_game_key = ""
+mini_ftool_in_game_key_2 = ""
 
 alt_control_key_list_1 = []
 alt_control_key_list_2 = []
@@ -40,6 +41,7 @@ user_agent = ""
 
 mini_ftool_repeat_times = 0
 mini_ftool_interval = 0
+mini_ftool_interval_2 = 0
 
 start_mini_ftool_loop = False
 alt_control_boolean = False
@@ -345,8 +347,12 @@ class MainWindow(QMainWindow):
         global start_mini_ftool_loop
         global hwndMain
         global mini_ftool_in_game_key
+        global mini_ftool_in_game_key_2
+        global mini_ftool_interval
+        global mini_ftool_interval_2
 
         counter = 0
+        extra_key_time = 0
 
         try:
             while True:
@@ -357,7 +363,18 @@ class MainWindow(QMainWindow):
                     time.sleep(random.uniform(0.369420, 0.769420))
                     win32api.SendMessage(hwndMain, win32con.WM_KEYUP, mini_ftool_in_game_key, 0)
 
-                    time.sleep(random.uniform(0, mini_ftool_interval + 1))
+                    random_wait = random.uniform(0, mini_ftool_interval + 1)
+
+                    extra_key_time = extra_key_time + random_wait
+
+                    if mini_ftool_in_game_key_2 and mini_ftool_interval_2:
+                        if extra_key_time >= mini_ftool_interval_2:
+                            win32api.SendMessage(hwndMain, win32con.WM_KEYDOWN, mini_ftool_in_game_key_2, 0)
+                            time.sleep(random.uniform(0.369420, 0.769420))
+                            win32api.SendMessage(hwndMain, win32con.WM_KEYUP, mini_ftool_in_game_key_2, 0)
+                            extra_key_time = 0
+
+                    time.sleep(random_wait)
 
                     counter += 1
                 else:
@@ -382,11 +399,6 @@ class MainWindow(QMainWindow):
             start_mini_ftool_loop = False
 
     def ftool_config(self):
-
-        global mini_ftool_activation_key
-        global mini_ftool_in_game_key
-        global mini_ftool_repeat_times
-        global mini_ftool_interval
         global menubar_window
         global profile_list
 
@@ -414,13 +426,18 @@ class MainWindow(QMainWindow):
             def save():
                 global mini_ftool_activation_key
                 global mini_ftool_in_game_key
+                global mini_ftool_in_game_key_2
                 global alt_control_key_list_1
                 global mini_ftool_repeat_times
                 global mini_ftool_interval
+                global mini_ftool_interval_2
                 global mini_ftool_window_name
                 global vk_code
                 global menubar_window
                 global mini_ftool_json_file
+
+                mini_ftool_in_game_key_2 = ""
+                mini_ftool_interval_2 = ""
 
                 aux = activation_key_entry.get()
 
@@ -451,10 +468,23 @@ class MainWindow(QMainWindow):
                                                       "cannot be the same as the Mini Ftool Activation Key.")
                     else:
 
+                        list_keys = in_game_hotkey_entry.get().split(",")
+                        list_interval = interval_entry.get().split(",")
+
+                        if "" in list_keys:
+                            list_keys.remove("")
+                        if "" in list_interval:
+                            list_interval.remove("")
+
+                        mini_ftool_in_game_key = vk_code.get(list_keys[0])
+                        mini_ftool_interval = float(list_interval[0])
+
+                        if (len(list_keys) and len(list_interval)) >= 2:
+                            mini_ftool_in_game_key_2 = vk_code.get(list_keys[1])
+                            mini_ftool_interval_2 = float(list_interval[1])
+
                         mini_ftool_activation_key = activation_key_entry.get()
-                        mini_ftool_in_game_key = vk_code.get(in_game_hotkey_entry.get())
                         mini_ftool_repeat_times = int(repeat_times_entry.get())
-                        mini_ftool_interval = float(interval_entry.get())
                         mini_ftool_window_name = window_combobox.get()
 
                         self.ftool_key.setKey(mini_ftool_activation_key)
@@ -484,13 +514,13 @@ class MainWindow(QMainWindow):
             activation_key_label = Label(frame, text="Activation Key:", width=22, anchor=W)
             activation_key_entry = Entry(frame, width=20)
 
-            in_game_hotkey_label = Label(frame, text="In-Game Hotkey:", width=22, anchor=W)
+            in_game_hotkey_label = Label(frame, text="In-Game Hotkey(s):", width=22, anchor=W)
             in_game_hotkey_entry = Entry(frame, width=20)
 
             repeat_times_label = Label(frame, text="Repeat:", width=22, anchor=W)
             repeat_times_entry = Entry(frame, width=20)
 
-            interval_label = Label(frame, text="Interval:", width=22, anchor=W)
+            interval_label = Label(frame, text="Interval(s):", width=22, anchor=W)
             interval_entry = Entry(frame, width=20)
 
             window_label = Label(frame, text="Profile Name:", width=22, anchor=W)
