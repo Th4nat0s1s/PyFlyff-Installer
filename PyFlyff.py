@@ -1010,22 +1010,22 @@ class MainWindow(QMainWindow):
 
             menubar_window = True
 
-            alt_profile_window = Tk()
+            profile_window = Tk()
 
             window_width = 300
             window_height = 100
 
-            screen_width = alt_profile_window.winfo_screenwidth()
-            screen_height = alt_profile_window.winfo_screenheight()
+            screen_width = profile_window.winfo_screenwidth()
+            screen_height = profile_window.winfo_screenheight()
 
             x = (screen_width / 2) - (window_width / 2)
             y = (screen_height / 2) - (window_height / 2)
 
-            alt_profile_window.geometry("300x100+" + str(int(x)) + "+" + str(int(y)))
-            alt_profile_window.minsize(300, 100)
-            alt_profile_window.attributes("-topmost", True)
-            alt_profile_window.title("Alt Profile")
-            alt_profile_window.iconbitmap(icon)
+            profile_window.geometry("300x100+" + str(int(x)) + "+" + str(int(y)))
+            profile_window.minsize(300, 100)
+            profile_window.attributes("-topmost", True)
+            profile_window.title("Profile")
+            profile_window.iconbitmap(icon)
 
             def open_profile_new_window():
                 global menubar_window
@@ -1035,17 +1035,17 @@ class MainWindow(QMainWindow):
                 global can_reload_client
 
                 try:
-                    if alt_profile_combobox.get() == "":
+                    if profile_window_combobox.get() == "":
 
                         messagebox.showerror("Error", "Field cannot be empty.")
 
                     else:
 
-                        alt_profile_combobox["values"] = self.save_alt_profiles(alt_profile_combobox.get())
+                        profile_window_combobox["values"] = self.save_alt_profiles(profile_window_combobox.get())
 
                         if client_type == "Alt":
 
-                            self.create_new_window(url, alt_profile_combobox.get())
+                            self.create_new_window(url, profile_window_combobox.get())
                         else:
 
                             self.browser = None
@@ -1054,41 +1054,42 @@ class MainWindow(QMainWindow):
 
                             self.setCentralWidget(self.browser)
 
-                            client_folder = "C:/PyFlyff/" + alt_profile_combobox.get().replace(" ", "")
+                            client_folder = "C:/PyFlyff/" + profile_window_combobox.get().replace(" ", "")
 
-                            main_profile = QWebEngineProfile(alt_profile_combobox.get().replace(" ", ""), self.browser)
+                            main_profile = QWebEngineProfile(profile_window_combobox.get().replace(" ", ""),
+                                                             self.browser)
                             main_profile.setCachePath(client_folder)
                             main_profile.setPersistentStoragePath(client_folder)
                             main_page = QWebEnginePage(main_profile, self.browser)
 
                             self.browser.setPage(main_page)
                             self.browser.setUrl(QUrl(url))
-                            self.setWindowTitle("PyFlyff - " + alt_profile_combobox.get())
+                            self.setWindowTitle("PyFlyff - " + profile_window_combobox.get())
 
                             self.browser.page().profile().setHttpUserAgent(self.load_user_agent())
 
                             can_reload_client = True
 
                         menubar_window = False
-                        alt_profile_window.destroy()
+                        profile_window.destroy()
 
                 except Exception as e:
                     messagebox.showerror("Error", str(e))
 
             self.load_alt_profiles()
 
-            alt_window_label = Label(alt_profile_window, text="Create a new profile or choose an existing one.")
-            alt_profile_combobox = ttk.Combobox(alt_profile_window, values=profile_list)
+            profile_window_label = Label(profile_window, text="Create a new profile or choose an existing one.")
+            profile_window_combobox = ttk.Combobox(profile_window, values=profile_list)
 
-            alt_window_label.pack(fill=X, pady=5, padx=5)
-            alt_profile_combobox.pack(fill=X, pady=5, padx=5)
+            profile_window_label.pack(fill=X, pady=5, padx=5)
+            profile_window_combobox.pack(fill=X, pady=5, padx=5)
 
             button_save = Button(text="Open", width=10, height=1, command=open_profile_new_window)
             button_save.pack(pady=5)
 
-            alt_profile_window.wm_protocol("WM_DELETE_WINDOW",
-                                           lambda: self.destroy_toolbar_windows(alt_profile_window))
-            alt_profile_window.mainloop()
+            profile_window.wm_protocol("WM_DELETE_WINDOW",
+                                       lambda: self.destroy_toolbar_windows(profile_window))
+            profile_window.mainloop()
 
     @staticmethod
     def save_alt_profiles(combobox):
