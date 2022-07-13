@@ -342,8 +342,7 @@ class MainWindow(QMainWindow):
             self.showFullScreen()
             self.menu_bar.setVisible(False)
 
-    @staticmethod
-    def ftool_loop():
+    def ftool_loop(self):
         global start_mini_ftool_loop
         global hwndMain
         global mini_ftool_in_game_key
@@ -359,9 +358,7 @@ class MainWindow(QMainWindow):
 
                 if counter < mini_ftool_repeat_times and start_mini_ftool_loop is True:
 
-                    win32api.SendMessage(hwndMain, win32con.WM_KEYDOWN, mini_ftool_in_game_key, 0)
-                    time.sleep(random.uniform(0.369420, 0.769420))
-                    win32api.SendMessage(hwndMain, win32con.WM_KEYUP, mini_ftool_in_game_key, 0)
+                    self.winapi(hwndMain, mini_ftool_in_game_key)
 
                     random_wait = random.uniform(0, mini_ftool_interval + 1)
 
@@ -369,10 +366,7 @@ class MainWindow(QMainWindow):
 
                     if mini_ftool_in_game_key_2 and mini_ftool_interval_2:
                         if extra_key_time >= mini_ftool_interval_2:
-                            win32api.SendMessage(hwndMain, win32con.WM_KEYDOWN, mini_ftool_in_game_key_2, 0)
-                            time.sleep(random.uniform(0.369420, 0.769420))
-                            win32api.SendMessage(hwndMain, win32con.WM_KEYUP, mini_ftool_in_game_key_2, 0)
-                            extra_key_time = 0
+                            self.winapi(hwndMain, mini_ftool_in_game_key_2)
 
                     time.sleep(random_wait)
 
@@ -726,8 +720,7 @@ class MainWindow(QMainWindow):
                                                   lambda: self.destroy_toolbar_windows(alt_control_config_window))
             alt_control_config_window.mainloop()
 
-    @staticmethod
-    def send_alt_control_command(igk):
+    def send_alt_control_command(self, igk):
         global alt_control_boolean
         global alt_window_name
         global hwndAlt
@@ -735,9 +728,7 @@ class MainWindow(QMainWindow):
         if alt_control_boolean and igk != "":
             hwndAlt = win32gui.FindWindow(None, "PyFlyff - " + alt_window_name)
 
-            win32api.SendMessage(hwndAlt, win32con.WM_KEYDOWN, igk, 0)
-            time.sleep(0.5)
-            win32api.SendMessage(hwndAlt, win32con.WM_KEYUP, igk, 0)
+            self.winapi(hwndAlt, igk)
 
     def set_user_agent(self):
         global user_agent
@@ -803,43 +794,6 @@ class MainWindow(QMainWindow):
                                                  lambda: self.destroy_toolbar_windows(user_agent_config_window))
 
             user_agent_config_window.mainloop()
-
-    @staticmethod
-    def save_config_json(**kwargs):
-        global mini_ftool_json_file
-        global alt_control_json_file
-        global user_agent_json_file
-
-        file = kwargs.get("file")
-        values = kwargs.get("values")
-
-        data = ""
-
-        try:
-            if file == mini_ftool_json_file:
-                data = {"activation_key": values[0], "in_game_key": values[1], "repeat_times": values[2],
-                        "interval": values[3], "window": values[4]}
-
-            if file == alt_control_json_file:
-                data = {"activation_key": values[0], "in_game_key": values[1], "alt_window": values[2]}
-
-            if file == user_agent_json_file:
-                data = {"user_agent": values[0]}
-
-            json_data = json.dumps(data)
-            save_json = open(file, "w")
-            save_json.write(str(json_data))
-            save_json.close()
-
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-
-    @staticmethod
-    def destroy_toolbar_windows(w):
-        global menubar_window
-
-        menubar_window = False
-        w.destroy()
 
     def reset_hotkeys(self):
         global mini_ftool_window_name
@@ -1091,6 +1045,66 @@ class MainWindow(QMainWindow):
                                        lambda: self.destroy_toolbar_windows(profile_window))
             profile_window.mainloop()
 
+    def always_on_top(self):
+        global is_on_top
+
+        if not is_on_top:
+            self.setWindowFlag(Qt.WindowStaysOnTopHint)
+            self.show()
+            is_on_top = True
+        else:
+            self.setWindowFlags(
+                Qt.Window |
+                Qt.WindowTitleHint |
+                Qt.WindowCloseButtonHint |
+                Qt.WindowMinimizeButtonHint |
+                Qt.WindowMaximizeButtonHint)
+            self.show()
+            is_on_top = False
+
+    def reload_main_client(self):
+        global can_reload_client
+
+        if can_reload_client:
+            self.browser.setUrl(QUrl(url))
+
+    @staticmethod
+    def save_config_json(**kwargs):
+        global mini_ftool_json_file
+        global alt_control_json_file
+        global user_agent_json_file
+
+        file = kwargs.get("file")
+        values = kwargs.get("values")
+
+        data = ""
+
+        try:
+            if file == mini_ftool_json_file:
+                data = {"activation_key": values[0], "in_game_key": values[1], "repeat_times": values[2],
+                        "interval": values[3], "window": values[4]}
+
+            if file == alt_control_json_file:
+                data = {"activation_key": values[0], "in_game_key": values[1], "alt_window": values[2]}
+
+            if file == user_agent_json_file:
+                data = {"user_agent": values[0]}
+
+            json_data = json.dumps(data)
+            save_json = open(file, "w")
+            save_json.write(str(json_data))
+            save_json.close()
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    @staticmethod
+    def destroy_toolbar_windows(w):
+        global menubar_window
+
+        menubar_window = False
+        w.destroy()
+
     @staticmethod
     def save_alt_profiles(combobox):
         exist = any(combobox in string for string in profile_list)
@@ -1122,32 +1136,15 @@ class MainWindow(QMainWindow):
                 f = open(profile_file_location, "w")
                 f.close()
 
-    def always_on_top(self):
-        global is_on_top
-
-        if not is_on_top:
-            self.setWindowFlag(Qt.WindowStaysOnTopHint)
-            self.show()
-            is_on_top = True
-        else:
-            self.setWindowFlags(
-                Qt.Window |
-                Qt.WindowTitleHint |
-                Qt.WindowCloseButtonHint |
-                Qt.WindowMinimizeButtonHint |
-                Qt.WindowMaximizeButtonHint)
-            self.show()
-            is_on_top = False
-
-    def reload_main_client(self):
-        global can_reload_client
-
-        if can_reload_client:
-            self.browser.setUrl(QUrl(url))
-
     @staticmethod
     def multithreading(function):
         threading.Thread(target=function).start()
+
+    @staticmethod
+    def winapi(w, key):
+        win32api.SendMessage(w, win32con.WM_KEYDOWN, key, 0)
+        time.sleep(random.uniform(0.369420, 0.769420))
+        win32api.SendMessage(w, win32con.WM_KEYUP, key, 0)
 
 
 app = QApplication(sys.argv)
