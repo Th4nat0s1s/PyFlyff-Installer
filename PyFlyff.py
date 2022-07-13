@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
                     if mini_ftool_in_game_key_2 and mini_ftool_interval_2:
                         if extra_key_time >= mini_ftool_interval_2:
                             self.winapi(hwndMain, mini_ftool_in_game_key_2)
+                            extra_key_time = 0
 
                     time.sleep(random_wait)
 
