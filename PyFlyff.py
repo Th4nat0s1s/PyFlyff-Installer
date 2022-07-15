@@ -5,7 +5,7 @@ import time
 import os
 
 from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction, QErrorMessage
+from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction, QErrorMessage, QMenuBar
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from PyQt5.QtGui import QKeySequence, QIcon
 
@@ -221,7 +221,9 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(640, 480)
         self.showMaximized()
 
-        self.menu_bar = self.menuBar()
+        self.menu_bar = QMenuBar()
+        self.menu_bar.setNativeMenuBar(False)
+        self.setMenuBar(self.menu_bar)
 
         ftool = QAction("Mini FTool", self)
         ftool.triggered.connect(lambda: self.multithreading(self.ftool_config))
