@@ -468,7 +468,7 @@ class MainWindow(QMainWindow):
 
                         messagebox.showerror("Error", "Intervals cannot be lower than zero.")
 
-                    elif activation_key_entry.get() == in_game_hotkey_entry.get():
+                    elif activation_key_entry.get() == list_keys[0] or activation_key_entry.get() == list_keys[1]:
 
                         messagebox.showerror("Error", "Activation Key and In-game Hotkey must be different.")
 
