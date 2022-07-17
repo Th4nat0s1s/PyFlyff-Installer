@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
 
                         messagebox.showerror("Error", "Fields cannot be empty.")
 
-                    elif (float(list_interval[0]) or float(list_interval[1])) < 0:
+                    elif any(i for i in list_interval if float(i) < 0):
 
                         messagebox.showerror("Error", "Intervals cannot be lower than zero.")
 
@@ -477,7 +477,6 @@ class MainWindow(QMainWindow):
                         messagebox.showerror("Error", "Main Client HotKey from Alt Control "
                                                       "cannot be the same as the Mini Ftool Activation Key.")
                     else:
-
                         mini_ftool_in_game_key = vk_code.get(list_keys[0])
                         mini_ftool_interval = float(list_interval[0])
 
