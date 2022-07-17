@@ -255,15 +255,15 @@ class MainWindow(QMainWindow):
         q_action_change_main_client_profile = QAction("Change Main Client Profile", self)
         q_action_change_main_client_profile.triggered.connect(lambda: self.create_open_client_profile("Main"))
 
-        q_action_always_on_top = QAction("Always on Top On/Off", self)
-        q_action_always_on_top.triggered.connect(self.always_on_top)
+        self.q_action_always_on_top = QAction("Always on Top: Off", self)
+        self.q_action_always_on_top.triggered.connect(self.always_on_top)
 
         menu_client = self.menu_bar.addMenu("Client")
         menu_client.addAction(q_action_user_agent)
         menu_client.addAction(q_action_fullscreen)
         menu_client.addAction(q_action_open_alt_client)
         menu_client.addAction(q_action_change_main_client_profile)
-        menu_client.addAction(q_action_always_on_top)
+        menu_client.addAction(self.q_action_always_on_top)
         menu_client.setToolTipsVisible(True)
 
         q_action_flyffipedia = QAction("Flyffipedia", self)
@@ -362,7 +362,7 @@ class MainWindow(QMainWindow):
 
                     self.winapi(hwndMain, mini_ftool_in_game_key)
 
-                    random_wait = random.uniform(0, mini_ftool_interval + 1)
+                    random_wait = random.uniform(0, mini_ftool_interval)
 
                     extra_key_time = extra_key_time + random_wait
 
@@ -447,6 +447,15 @@ class MainWindow(QMainWindow):
                 in_game_hotkey_entry.insert(0, aux.replace(" ", "").lower())
 
                 try:
+
+                    list_keys = in_game_hotkey_entry.get().split(",")
+                    list_interval = interval_entry.get().split(",")
+
+                    if "" in list_keys:
+                        list_keys.remove("")
+                    if "" in list_interval:
+                        list_interval.remove("")
+
                     if (activation_key_entry.get()
                         and in_game_hotkey_entry.get()
                         and repeat_times_entry.get()
@@ -454,6 +463,10 @@ class MainWindow(QMainWindow):
                         and window_combobox.get()) == "":
 
                         messagebox.showerror("Error", "Fields cannot be empty.")
+
+                    elif (float(list_interval[0]) or float(list_interval[1])) < 0:
+
+                        messagebox.showerror("Error", "Intervals cannot be lower than zero.")
 
                     elif activation_key_entry.get() == in_game_hotkey_entry.get():
 
@@ -464,14 +477,6 @@ class MainWindow(QMainWindow):
                         messagebox.showerror("Error", "Main Client HotKey from Alt Control "
                                                       "cannot be the same as the Mini Ftool Activation Key.")
                     else:
-
-                        list_keys = in_game_hotkey_entry.get().split(",")
-                        list_interval = interval_entry.get().split(",")
-
-                        if "" in list_keys:
-                            list_keys.remove("")
-                        if "" in list_interval:
-                            list_interval.remove("")
 
                         mini_ftool_in_game_key = vk_code.get(list_keys[0])
                         mini_ftool_interval = float(list_interval[0])
@@ -804,6 +809,7 @@ class MainWindow(QMainWindow):
         global hwndAlt
         global mini_ftool_activation_key
         global mini_ftool_in_game_key
+        global mini_ftool_in_game_key_2
         global start_mini_ftool_loop
 
         if not start_mini_ftool_loop:
@@ -813,6 +819,7 @@ class MainWindow(QMainWindow):
 
             mini_ftool_activation_key = ""
             mini_ftool_in_game_key = ""
+            mini_ftool_in_game_key_2 = ""
 
             self.ftool_key.setKey("")
 
@@ -1054,6 +1061,7 @@ class MainWindow(QMainWindow):
         if not is_on_top:
             self.setWindowFlag(Qt.WindowStaysOnTopHint)
             self.show()
+            self.q_action_always_on_top.setText("Always on Top: On")
             is_on_top = True
         else:
             self.setWindowFlags(
@@ -1063,6 +1071,7 @@ class MainWindow(QMainWindow):
                 Qt.WindowMinimizeButtonHint |
                 Qt.WindowMaximizeButtonHint)
             self.show()
+            self.q_action_always_on_top.setText("Always on Top: Off")
             is_on_top = False
 
     def reload_main_client(self):
