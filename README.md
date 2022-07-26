@@ -30,7 +30,7 @@ To stop the Mini Ftool loop, press the Activation Key again.
 
 # Features
 
-Mini Ftool: You can setup up to 2 hotkeys to automatically use a skill/item for you (good for heal spam or mage/psy/elementor 1x1). To stop it, press the same key you used to start the loop.
+Mini Ftool: You can setup up to 3 hotkeys to automatically use a skill/item for you (good for heal spam or mage/psy/elementor 1x1). To stop it, press the same key you used to start the loop.
 
 To setup the second hotkey, separate both keys with a comma ","
 
@@ -40,6 +40,8 @@ In-Game Hotkey(s): f1,5
 Interval(s): 1,45
 
 Note that, "f1" will always be pressed, and once the interval reaches 45 seconds, it will then press the "5" key.
+
+The caveat for using more than 2 keys in the Mini Ftool is that the interval between the keys must be considerable, because smaller intervals will make the keys press too fast therefor Flyff can't process the key presses too fast!
 
 Alt Control: You can set hotkeys for the Main Client to send a direct command to the Alt Client. Good if you don't want to use the Mini Ftool, but still want to command your FS/RM without having to alt+tab. To set multiple keys (up to 20 keys) add commas between each one.
 
