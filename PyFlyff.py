@@ -26,8 +26,6 @@ icon = "icons/PyFlyff.ico"
 default_user_agent = "None"
 
 mini_ftool_activation_key = ""
-mini_ftool_in_game_key = ""
-mini_ftool_in_game_key_2 = ""
 
 alt_control_key_list_1 = []
 alt_control_key_list_2 = []
@@ -40,8 +38,6 @@ alt_window_name = ""
 user_agent = ""
 
 mini_ftool_repeat_times = 0
-mini_ftool_interval = 0
-mini_ftool_interval_2 = 0
 
 start_mini_ftool_loop = False
 alt_control_boolean = False
@@ -347,29 +343,32 @@ class MainWindow(QMainWindow):
     def ftool_loop(self):
         global start_mini_ftool_loop
         global hwndMain
-        global mini_ftool_in_game_key
-        global mini_ftool_in_game_key_2
-        global mini_ftool_interval
-        global mini_ftool_interval_2
 
         counter = 0
-        extra_key_time = 0
+        extra_key_time_1 = 0
+        extra_key_time_2 = 0
 
         try:
             while True:
 
                 if counter < mini_ftool_repeat_times and start_mini_ftool_loop is True:
 
-                    self.winapi(hwndMain, mini_ftool_in_game_key)
+                    self.winapi(hwndMain, globals()["mini_ftool_in_game_key_1"])
 
-                    random_wait = random.uniform(0, mini_ftool_interval)
+                    random_wait = random.uniform(0, globals()["mini_ftool_interval_1"])
 
-                    extra_key_time = extra_key_time + random_wait
+                    extra_key_time_1 = extra_key_time_1 + random_wait
+                    extra_key_time_2 = extra_key_time_2 + random_wait
 
-                    if mini_ftool_in_game_key_2 and mini_ftool_interval_2:
-                        if extra_key_time >= mini_ftool_interval_2:
-                            self.winapi(hwndMain, mini_ftool_in_game_key_2)
-                            extra_key_time = 0
+                    if globals()["mini_ftool_in_game_key_2"] and globals()["mini_ftool_interval_2"]:
+                        if extra_key_time_1 >= globals()["mini_ftool_interval_2"]:
+                            self.winapi(hwndMain, globals()["mini_ftool_in_game_key_2"])
+                            extra_key_time_1 = 0
+
+                    if globals()["mini_ftool_in_game_key_3"] and globals()["mini_ftool_interval_3"]:
+                        if extra_key_time_2 >= globals()["mini_ftool_interval_3"]:
+                            self.winapi(hwndMain, globals()["mini_ftool_in_game_key_3"])
+                            extra_key_time_2 = 0
 
                     time.sleep(random_wait)
 
@@ -389,7 +388,7 @@ class MainWindow(QMainWindow):
         hwndMain = win32gui.FindWindow(None, "PyFlyff - " + mini_ftool_window_name)
 
         if not start_mini_ftool_loop:
-            if mini_ftool_activation_key != "" and mini_ftool_in_game_key != "":
+            if mini_ftool_activation_key != "" and globals()["mini_ftool_in_game_key_1"] != "":
                 start_mini_ftool_loop = True
                 self.multithreading(self.ftool_loop)
         else:
@@ -422,19 +421,12 @@ class MainWindow(QMainWindow):
 
             def save():
                 global mini_ftool_activation_key
-                global mini_ftool_in_game_key
-                global mini_ftool_in_game_key_2
                 global alt_control_key_list_1
                 global mini_ftool_repeat_times
-                global mini_ftool_interval
-                global mini_ftool_interval_2
                 global mini_ftool_window_name
                 global vk_code
                 global menubar_window
                 global mini_ftool_json_file
-
-                mini_ftool_in_game_key_2 = ""
-                mini_ftool_interval_2 = ""
 
                 aux = activation_key_entry.get()
 
@@ -476,13 +468,26 @@ class MainWindow(QMainWindow):
 
                         messagebox.showerror("Error", "Main Client HotKey from Alt Control "
                                                       "cannot be the same as the Mini Ftool Activation Key.")
-                    else:
-                        mini_ftool_in_game_key = vk_code.get(list_keys[0])
-                        mini_ftool_interval = float(list_interval[0])
+                    elif len(list_keys) != len(list_interval):
 
-                        if (len(list_keys) and len(list_interval)) >= 2:
-                            mini_ftool_in_game_key_2 = vk_code.get(list_keys[1])
-                            mini_ftool_interval_2 = float(list_interval[1])
+                        messagebox.showerror("Error",
+                                             "In-Game Hotkey(s) and Interval(s) must have the same "
+                                             "amount of values (3 keys for 3 intervals)")
+                    else:
+                        key_counter = 1
+                        interval_counter = 1
+
+                        for key in list_keys:
+                            globals()["mini_ftool_in_game_key_" + str(key_counter)] = vk_code.get(key)
+                            key_counter += 1
+                            if key_counter > 3:
+                                break
+
+                        for interval in list_interval:
+                            globals()["mini_ftool_interval_" + str(interval_counter)] = float(interval)
+                            interval_counter += 1
+                            if interval_counter > 3:
+                                break
 
                         mini_ftool_activation_key = activation_key_entry.get()
                         mini_ftool_repeat_times = int(repeat_times_entry.get())
@@ -807,8 +812,6 @@ class MainWindow(QMainWindow):
         global hwndMain
         global hwndAlt
         global mini_ftool_activation_key
-        global mini_ftool_in_game_key
-        global mini_ftool_in_game_key_2
         global start_mini_ftool_loop
 
         if not start_mini_ftool_loop:
@@ -817,8 +820,10 @@ class MainWindow(QMainWindow):
             hwndAlt = ""
 
             mini_ftool_activation_key = ""
-            mini_ftool_in_game_key = ""
-            mini_ftool_in_game_key_2 = ""
+
+            globals()["mini_ftool_in_game_key_1"] = ""
+            globals()["mini_ftool_in_game_key_2"] = ""
+            globals()["mini_ftool_in_game_key_3"] = ""
 
             self.ftool_key.setKey("")
 
