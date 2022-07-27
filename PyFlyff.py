@@ -428,6 +428,10 @@ class MainWindow(QMainWindow):
                 global menubar_window
                 global mini_ftool_json_file
 
+                globals()["mini_ftool_in_game_key_1"] = ""
+                globals()["mini_ftool_in_game_key_2"] = ""
+                globals()["mini_ftool_in_game_key_3"] = ""
+
                 aux = activation_key_entry.get()
 
                 activation_key_entry.delete(0, END)
@@ -480,13 +484,13 @@ class MainWindow(QMainWindow):
                         for key in list_keys:
                             globals()["mini_ftool_in_game_key_" + str(key_counter)] = vk_code.get(key)
                             key_counter += 1
-                            if key_counter > 3:
+                            if key_counter > len(list_keys):
                                 break
 
                         for interval in list_interval:
                             globals()["mini_ftool_interval_" + str(interval_counter)] = float(interval)
                             interval_counter += 1
-                            if interval_counter > 3:
+                            if interval_counter > len(list_interval):
                                 break
 
                         mini_ftool_activation_key = activation_key_entry.get()
