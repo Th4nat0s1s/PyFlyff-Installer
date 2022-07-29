@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QAction, QErro
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from PyQt5.QtGui import QKeySequence, QIcon
 
-from tkinter import Tk, ttk, Frame, Label, Entry, Button, X, W, LEFT, RIGHT, END
+from tkinter import Tk, ttk, Frame, Label, Entry, Button, X, W, LEFT, RIGHT, END, OptionMenu, StringVar
 from tkinter import messagebox
 
 import random
@@ -27,6 +27,7 @@ default_user_agent = "None"
 
 mini_ftool_activation_key = ""
 mini_ftool_min_interval = 0
+fix_mini_ftool_loop_var = ""
 
 alt_control_key_list_1 = []
 alt_control_key_list_2 = []
@@ -223,7 +224,7 @@ class MainWindow(QMainWindow):
         self.setMenuBar(self.menu_bar)
 
         ftool = QAction("Mini FTool", self)
-        ftool.triggered.connect(lambda: self.multithreading(self.ftool_config))
+        ftool.triggered.connect(lambda: self.multithreading(self.mini_ftool_config))
 
         alt_control = QAction("Alt Control", self)
         alt_control.triggered.connect(lambda: self.multithreading(self.alt_control_config))
@@ -341,9 +342,10 @@ class MainWindow(QMainWindow):
             self.showFullScreen()
             self.menu_bar.setVisible(False)
 
-    def ftool_loop(self):
+    def mini_ftool_loop(self):
         global start_mini_ftool_loop
         global mini_ftool_min_interval
+        global fix_mini_ftool_loop_var
         global hwndMain
 
         counter = 0
@@ -368,7 +370,8 @@ class MainWindow(QMainWindow):
                         if extra_key_time_2 >= globals()["mini_ftool_interval_3"]:
                             self.winapi(hwndMain, globals()["mini_ftool_in_game_key_3"])
                             extra_key_time_2 = 0.0
-                            extra_key_time_1 = 0.0
+                            if fix_mini_ftool_loop_var == "YES":
+                                extra_key_time_1 = 0.0
 
                     counter += 1
 
@@ -383,7 +386,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    def start_ftool(self):
+    def start_mini_ftool(self):
         global start_mini_ftool_loop
         global hwndMain
         global mini_ftool_window_name
@@ -393,11 +396,11 @@ class MainWindow(QMainWindow):
         if not start_mini_ftool_loop:
             if mini_ftool_activation_key != "" and globals()["mini_ftool_in_game_key_1"] != "":
                 start_mini_ftool_loop = True
-                self.multithreading(self.ftool_loop)
+                self.multithreading(self.mini_ftool_loop)
         else:
             start_mini_ftool_loop = False
 
-    def ftool_config(self):
+    def mini_ftool_config(self):
         global menubar_window
         global profile_list
 
@@ -408,7 +411,7 @@ class MainWindow(QMainWindow):
             ftool_config_window = Tk()
 
             window_width = 300
-            window_height = 250
+            window_height = 320
 
             screen_width = ftool_config_window.winfo_screenwidth()
             screen_height = ftool_config_window.winfo_screenheight()
@@ -417,13 +420,14 @@ class MainWindow(QMainWindow):
             y = (screen_height / 2) - (window_height / 2)
 
             ftool_config_window.geometry("300x250+" + str(int(x)) + "+" + str(int(y)))
-            ftool_config_window.minsize(300, 280)
+            ftool_config_window.minsize(300, 320)
             ftool_config_window.attributes("-topmost", True)
             ftool_config_window.title("Mini Ftool")
             ftool_config_window.iconbitmap(icon)
 
             def save():
                 global mini_ftool_activation_key
+                global fix_mini_ftool_loop_var
                 global mini_ftool_min_interval
                 global alt_control_key_list_1
                 global mini_ftool_repeat_times
@@ -502,6 +506,7 @@ class MainWindow(QMainWindow):
                                 break
 
                         mini_ftool_activation_key = activation_key_entry.get()
+                        fix_mini_ftool_loop_var = var.get()
                         mini_ftool_repeat_times = int(repeat_times_entry.get())
                         mini_ftool_window_name = window_combobox.get()
                         mini_ftool_min_interval = float(min_interval_entry.get())
@@ -510,7 +515,7 @@ class MainWindow(QMainWindow):
 
                         self.save_config_json(file=mini_ftool_json_file, values=(
                             activation_key_entry.get(), in_game_hotkey_entry.get(), repeat_times_entry.get(),
-                            interval_entry.get(), min_interval_entry.get(), window_combobox.get()))
+                            interval_entry.get(), min_interval_entry.get(), var.get(), window_combobox.get()))
 
                         window_combobox["values"] = self.save_alt_profiles(window_combobox.get())
 
@@ -545,6 +550,12 @@ class MainWindow(QMainWindow):
             min_interval_label = Label(frame, text="Min Interval:", width=22, anchor=W)
             min_interval_entry = Entry(frame, width=20)
 
+            fix_mini_ftool_loop_label = Label(frame, text="Fix Loop:", width=22, anchor=W)
+            var = StringVar(ftool_config_window)
+            var.set("YES")
+            fix_mini_ftool_op = OptionMenu(frame, var, "YES", "NO")
+            fix_mini_ftool_op.config(width=5)
+
             window_label = Label(frame, text="Profile Name:", width=22, anchor=W)
             window_combobox = ttk.Combobox(frame, values=profile_list, width=17)
 
@@ -563,11 +574,14 @@ class MainWindow(QMainWindow):
             min_interval_label.grid(row=4, column=0, pady=5)
             min_interval_entry.grid(row=4, column=1, pady=5)
 
-            window_label.grid(row=5, column=0, pady=5)
-            window_combobox.grid(row=5, column=1, pady=5)
+            fix_mini_ftool_loop_label.grid(row=5, column=0, pady=5)
+            fix_mini_ftool_op.grid(row=5, column=1, pady=5, sticky=W)
+
+            window_label.grid(row=6, column=0, pady=5)
+            window_combobox.grid(row=6, column=1, pady=5)
 
             button_save = Button(text="Save", width=10, height=1, command=save)
-            button_save.pack()
+            button_save.pack(padx=5, pady=5)
 
             try:
                 if mini_ftool_json_file_location.exists():
@@ -579,6 +593,7 @@ class MainWindow(QMainWindow):
                         repeat_times_entry.insert(0, data["repeat_times"])
                         interval_entry.insert(0, data["interval"])
                         min_interval_entry.insert(0, data["min_interval"])
+                        var.set(data["fix_loop"])
                         window_combobox.insert(0, data["window"])
             except Exception as e:
                 messagebox.showerror("Error", str(e))
@@ -907,7 +922,7 @@ class MainWindow(QMainWindow):
 
     def create_shortcuts(self):
         self.ftool_key = QShortcut(self)
-        self.ftool_key.activated.connect(self.start_ftool)
+        self.ftool_key.activated.connect(self.start_mini_ftool)
 
         self.alt_control_key_1 = QShortcut(self)
         self.alt_control_key_1.activated.connect(
@@ -1118,7 +1133,7 @@ class MainWindow(QMainWindow):
         try:
             if file == mini_ftool_json_file:
                 data = {"activation_key": values[0], "in_game_key": values[1], "repeat_times": values[2],
-                        "interval": values[3], "min_interval": values[4], "window": values[5]}
+                        "interval": values[3], "min_interval": values[4], "fix_loop": values[5], "window": values[6]}
 
             if file == alt_control_json_file:
                 data = {"activation_key": values[0], "in_game_key": values[1], "alt_window": values[2]}
