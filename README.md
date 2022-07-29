@@ -41,7 +41,10 @@ Interval(s): 1,45
 
 Note that, "f1" will always be pressed, and once the interval reaches 45 seconds, it will then press the "5" key.
 
-The caveat for using more than 2 keys in the Mini Ftool is that the interval between the keys must be considerable, because smaller intervals will make the keys press too fast therefor Flyff can't process the key presses too fast!
+"Fix Loop" is an option that will or not fix the loop sequence, because mathematically both second and third key will be pressed at the same time during the loop.
+If you don't want that, set "Fix Loop" to YES, if you want the keys to keep going and be pressed once their time threshold reaches it, set it to "NO".
+
+"YES" is good if you are using skills, "NO" is good if you are using consumables in the second and third key.
 
 Alt Control: You can set hotkeys for the Main Client to send a direct command to the Alt Client. Good if you don't want to use the Mini Ftool, but still want to command your FS/RM without having to alt+tab. To set multiple keys (up to 20 keys) add commas between each one.
 
