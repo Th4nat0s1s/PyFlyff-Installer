@@ -844,6 +844,7 @@ class MainWindow(QMainWindow):
 
     def reset_hotkeys(self):
         global mini_ftool_window_name
+        global fix_mini_ftool_loop_var
         global hwndMain
         global hwndAlt
         global mini_ftool_activation_key
@@ -855,6 +856,7 @@ class MainWindow(QMainWindow):
             hwndAlt = ""
 
             mini_ftool_activation_key = ""
+            fix_mini_ftool_loop_var = ""
 
             globals()["mini_ftool_in_game_key_1"] = ""
             globals()["mini_ftool_in_game_key_2"] = ""
