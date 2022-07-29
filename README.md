@@ -46,6 +46,8 @@ If you don't want that, set "Fix Loop" to YES, if you want the keys to keep goin
 
 "YES" is good if you are using skills, "NO" is good if you are using consumables in the second and third key.
 
+Min Interval is a way for you to have more control to when the Mini Ftool should press the first key. If you set the Min Interval to 5 and the first key to 5, it will remove the randomness offset and always press the first key exactly after every 5 seconds. If you set the Min Interval to 5 and the first key to 10, it will press the first key in a random offset between 5 and 10.
+
 Alt Control: You can set hotkeys for the Main Client to send a direct command to the Alt Client. Good if you don't want to use the Mini Ftool, but still want to command your FS/RM without having to alt+tab. To set multiple keys (up to 20 keys) add commas between each one.
 
 Example:
