@@ -32,7 +32,7 @@ To stop the Mini Ftool loop, press the Activation Key again.
 
 Mini Ftool: You can setup up to 3 hotkeys to automatically use a skill/item for you (good for heal spam or mage/psy/elementor 1x1). To stop it, press the same key you used to start the loop.
 
-To setup the second hotkey, separate both keys with a comma ","
+To setup the second hotkey and third key, separate them with a comma ","
 
 Example: 
 
