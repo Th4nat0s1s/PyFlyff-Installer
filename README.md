@@ -1,3 +1,13 @@
+# This is an Installer (.msi) version only!
+
+All I have done is put ils94's amazing work into an easy to use MSI installer that should allow you to select an install location  and also apply a game shortcut for the PyFlyff.exe
+
+All of this has been done without ils94's permission, but done in good faith and I hope to be able to continue to keep this project up to date with his changes but I will probably only make updates for larger changes.
+
+If for whatever reason; I fall off the face of the earth or you want an update sooner than I update this installer... just download the zip from ils94's main project (https://github.com/ils94/PyFlyff) and overwrite the ".\Sob3k Installer\PyFlyff Installer\" directory with its contents. 
+
+
+
 # PyFlyff
 QtWebEngine to play Flyff Universe
 
